@@ -3,8 +3,9 @@ RUN apk add --no-cache git ca-certificates build-base su-exec olm-dev
 WORKDIR /build
 COPY . .
 RUN go test ./pkg/igconnector ./pkg/instameow ./pkg/messagix/dgw
-RUN ./build-ig.sh
+RUN go build -ldflags "-s -w -linkmode external -extldflags -static -X main.Commit=$(git rev-parse HEAD) -X main.BuildTime=$(date -u +%Y-%m-%dT%H:%M:%SZ) -X maunium.net/go/mautrix.GoModVersion=v0.33.0" -o mautrix-instagram ./cmd/mautrix-instagram
 
 # Keep the runtime and dependencies identical to the previous deployment.
 FROM dock.mau.dev/mautrix/meta@sha256:5e8e8accfc735aed330d29f66e545c478ed2890548168f5f192d5edbe7cb860b
 COPY --from=builder /build/mautrix-instagram /usr/bin/mautrix-meta
+RUN /usr/bin/mautrix-meta --version
