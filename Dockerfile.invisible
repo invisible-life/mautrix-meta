@@ -1,5 +1,5 @@
-FROM golang:1.27.4-alpine3.24 AS builder
-RUN apk add --no-cache git ca-certificates build-base su-exec olm-dev
+# The upstream production builder includes the static libolm archives.
+FROM dock.mau.dev/tulir/gomuks-build-docker@sha256:8cc6453dde63ac865cab8410ad39f72376c38ef977284a87be3553bc22dd5de6 AS builder
 WORKDIR /build
 COPY . .
 RUN go test ./pkg/igconnector ./pkg/instameow ./pkg/messagix/dgw
