@@ -68,6 +68,7 @@ type IGClient struct {
 	webPushCandidates     *exsync.Set[networkid.PortalID]
 	stopPeriodicReconnect atomic.Pointer[context.CancelFunc]
 	accountStateRechecks  atomic.Int32
+	lastFullReconnect     time.Time
 }
 
 func (ic *IGConnector) LoadUserLogin(ctx context.Context, login *bridgev2.UserLogin) error {
@@ -512,4 +513,9 @@ func (ic *IGClient) FullReconnect(seqIDOnly, reconnectionStateOnly bool) {
 		zerolog.Ctx(ctx).Err(err).Msg("Failed to delete reconnection state")
 	}
 	ic.Connect(ctx)
+	ic.lastFullReconnect = time.Now()
+}
+
+func (ic *IGClient) canReconnect() bool {
+	return time.Since(ic.lastFullReconnect) > time.Duration(ic.Main.Config.MinFullReconnectIntervalSeconds)*time.Second && ic.LoginMeta.Cookies != nil
 }
